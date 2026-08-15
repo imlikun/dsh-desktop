@@ -1,0 +1,41 @@
+/* 电光紫流光玻璃风 —— 注入官方 UI 的覆盖样式
+   尽量用稳定选择器；官方 UI 类名变化时本文件按需补充 */
+
+:root {
+  --brand: #6c4dff;
+  --brand-glow: rgba(108, 77, 255, 0.16);
+  --bg-app: #f7f7fb;
+  --text-primary: #1c1c28;
+  --text-secondary: #6b6b80;
+  --accent-1: #a855f7;
+  --accent-2: #6c4dff;
+}
+
+body {
+  background: var(--bg-app) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 侧栏 / 导航等深色面板改为紫调 */
+a, [class*="link"], [class*="button"][class*="primary"] {
+  color: var(--accent-2) !important;
+}
+
+/* 主按钮：电光紫 + 流光描边 */
+[class*="primary"], button[class*="primary"] {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.9), rgba(108, 77, 255, 0.66)) !important;
+  border-radius: 980px !important;
+  border: 1px solid rgba(108, 77, 255, 0.4) !important;
+}
+
+/* 选中态 / 焦点环 */
+[class*="active"], [class*="selected"], :focus {
+  border-color: var(--accent-2) !important;
+  box-shadow: 0 0 0 3px var(--brand-glow) !important;
+}
+
+/* 输入框圆角 */
+input, textarea, [class*="input"] {
+  border-radius: 12px !important;
+  border-color: rgba(108, 77, 255, 0.25) !important;
+}

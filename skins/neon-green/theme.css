@@ -1,0 +1,55 @@
+/* 荧光绿开发者终端风 —— 深色高对比 */
+
+:root {
+  --brand: #00e676;
+  --bg-app: #0b0f14;
+  --panel: #11161d;
+  --text-primary: #e6f7ee;
+  --text-secondary: #7aa88f;
+  --line: rgba(0, 230, 118, 0.25);
+  --glow: rgba(0, 230, 118, 0.18);
+}
+
+html, body {
+  background: var(--bg-app) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 面板统一深色 */
+[class*="sidebar"], [class*="panel"], [class*="card"], [class*="menu"], header, nav {
+  background: var(--panel) !important;
+  border-color: var(--line) !important;
+}
+
+/* 主按钮：荧光绿 + 文字阴影 */
+button[class*="primary"], [class*="button"][class*="primary"] {
+  background: var(--brand) !important;
+  color: #04240f !important;
+  font-weight: 700 !important;
+  border-radius: 4px !important;
+  box-shadow: 0 0 12px var(--glow) !important;
+}
+
+/* 链接 / 强调 */
+a, [class*="link"] {
+  color: var(--brand) !important;
+}
+
+/* 终端字体 */
+body, code, pre, [class*="code"], [class*="terminal"] {
+  font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace !important;
+}
+
+/* 输入框：暗底亮边框 */
+input, textarea, [class*="input"] {
+  background: #0d131a !important;
+  border-color: var(--line) !important;
+  color: var(--text-primary) !important;
+  border-radius: 4px !important;
+}
+
+/* 光标 / 选区 */
+::selection {
+  background: var(--brand) !important;
+  color: #04240f !important;
+}

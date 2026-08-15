@@ -1,0 +1,13 @@
+{
+  "id": "aurora-purple",
+  "name": "电光紫",
+  "version": "1.0.0",
+  "author": "likun",
+  "description": "电光紫流光玻璃风，呼应主站 appin.site 视觉",
+  "preview": "#6c4dff",
+  "theme": {
+    "dark": false,
+    "primary": "#6c4dff",
+    "background": "#f7f7fb"
+  }
+}

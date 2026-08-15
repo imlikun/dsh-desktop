@@ -1,0 +1,34 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "DSH Desktop",
+  "version": "0.1.0",
+  "identifier": "com.likun.dsh-desktop",
+  "build": {
+    "beforeDevCommand": "",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "",
+    "frontendDist": "../ui"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["dmg"],
+    "category": "DeveloperTool",
+    "shortDescription": "DeepSeek Harness Desktop",
+    "icon": ["icons/icon.png"],
+    "fileAssociations": [
+      {
+        "ext": ["dshskin"],
+        "name": "DSH Skin Package",
+        "role": "Editor",
+        "description": "DSH Desktop 皮肤包"
+      }
+    ]
+  }
+}

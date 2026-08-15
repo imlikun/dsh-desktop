@@ -1,0 +1,13 @@
+{
+  "id": "neon-green",
+  "name": "荧光绿",
+  "version": "1.0.0",
+  "author": "likun",
+  "description": "复古开发者终端风，荧光绿高对比",
+  "preview": "#00e676",
+  "theme": {
+    "dark": true,
+    "primary": "#00e676",
+    "background": "#0b0f14"
+  }
+}

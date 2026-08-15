@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DSH Desktop 设置</title>
+<style>
+  :root {
+    --brand: #6c4dff;
+    --brand-soft: #eeedfe;
+    --bg: #f7f7fb;
+    --card: #ffffff;
+    --text: #1c1c28;
+    --muted: #6b6b80;
+    --border: #e4e4ef;
+    --ok: #1d9e75;
+    --danger: #e24b4a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.6;
+    user-select: none;
+  }
+  header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 18px 10px;
+  }
+  header h1 { font-size: 16px; font-weight: 600; flex: 1; }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 10px; border-radius: 999px;
+    font-size: 12px; background: var(--brand-soft); color: #3c3489;
+  }
+  .status-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+  .status-pill.off .dot { background: #b4b2a9; }
+
+  .section { padding: 6px 18px 12px; }
+  .section-title {
+    font-size: 12px; font-weight: 600; color: var(--muted);
+    margin: 12px 0 8px; letter-spacing: .03em;
+  }
+
+  .skins {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .skin {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px;
+    transition: border-color .15s, box-shadow .15s;
+    position: relative;
+  }
+  .skin:hover { border-color: #c9c2f5; }
+  .skin.active { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(108,77,255,.15); }
+  .skin .thumb {
+    width: 100%; height: 56px; border-radius: 8px; margin-bottom: 10px;
+    display: flex; align-items: flex-end; padding: 6px;
+    color: #fff; font-size: 11px; font-weight: 500;
+  }
+  .skin .name { font-size: 14px; font-weight: 600; }
+  .skin .meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .skin .desc { font-size: 12px; color: var(--muted); margin-top: 6px; min-height: 32px; }
+  .skin .actions { display: flex; gap: 6px; margin-top: 10px; }
+  button {
+    font-family: inherit; font-size: 12px; font-weight: 500;
+    border-radius: 999px; padding: 5px 12px; cursor: pointer;
+    border: 1px solid var(--border); background: #fff; color: var(--text);
+    transition: background .15s;
+  }
+  button:hover { background: var(--brand-soft); }
+  button.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+  button.primary:hover { background: #5a3ee0; }
+  button.danger { color: var(--danger); border-color: #f3c4c3; }
+  button.danger:hover { background: #fcebeb; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  .badge-active {
+    position: absolute; top: 10px; right: 10px;
+    font-size: 10px; font-weight: 600; color: var(--brand);
+    background: var(--brand-soft); padding: 2px 8px; border-radius: 999px;
+  }
+
+  .toolbar { display: flex; gap: 8px; padding: 0 18px 18px; }
+  .toolbar button { padding: 6px 16px; }
+
+  .footer {
+    padding: 10px 18px; border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--muted);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .toast {
+    position: fixed; bottom: 56px; left: 50%; transform: translateX(-50%) translateY(10px);
+    background: #2c2c2a; color: #fff; padding: 8px 16px; border-radius: 999px;
+    font-size: 12px; opacity: 0; pointer-events: none; transition: all .2s;
+    z-index: 10;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .empty { color: var(--muted); text-align: center; padding: 30px 0; font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>DSH Desktop 设置</h1>
+  <span id="statusPill" class="status-pill"><span class="dot"></span><span id="statusText">检测中…</span></span>
+</header>
+
+<div class="section">
+  <div class="section-title">皮肤 / 主题</div>
+  <div id="skinList" class="skins"></div>
+</div>
+
+<div class="toolbar">
+  <button id="btnInstall" class="primary">安装皮肤包 (.dshskin)</button>
+  <button id="btnOpenDir">打开皮肤目录</button>
+</div>
+
+<div class="footer">
+  <span>皮肤 = 独立目录（skin.json + theme.css + assets）</span>
+  <span id="binInfo"></span>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  const T = window.__TAURI__?.core;
+  const $ = id => document.getElementById(id);
+
+  let skins = [];
+
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  async function invoke(cmd, args) {
+    return T.invoke(cmd, args);
+  }
+
+  function previewStyle(skin) {
+    // preview 可以是颜色或 assets 路径
+    if (skin.preview.startsWith('#')) return { background: skin.preview };
+    if (skin.preview.startsWith('/') || skin.preview.startsWith('http')) {
+      return { backgroundImage: `url(${skin.preview})`, backgroundSize: 'cover', backgroundPosition: 'center' };
+    }
+    // 用主题色兜底
+    const c = skin.dark ? '#2c2c3a' : '#eef0f7';
+    return { background: c };
+  }
+
+  async function load() {
+    skins = await invoke('list_skins');
+    render();
+    const st = await invoke('get_harness_status');
+    const pill = $('statusPill');
+    if (st.running) {
+      pill.classList.remove('off');
+      $('statusText').textContent = `运行中 · :${st.port}`;
+    } else {
+      pill.classList.add('off');
+      $('statusText').textContent = '未运行';
+    }
+    const bin = await invoke('get_dsh_bin');
+    $('binInfo').textContent = bin ? `dsh: ${bin}` : '未找到 dsh';
+  }
+
+  function render() {
+    const box = $('skinList');
+    if (!skins.length) {
+      box.innerHTML = '<div class="empty">还没有安装皮肤 — 点下方按钮安装一个 .dshskin 包</div>';
+      return;
+    }
+    box.innerHTML = skins.map(s => `
+      <div class="skin ${s.active ? 'active' : ''}">
+        ${s.active ? '<span class="badge-active">使用中</span>' : ''}
+        <div class="thumb" style="${Object.entries(previewStyle(s)).map(([k,v]) => `${k}:${v}`).join(';')}">${s.name}</div>
+        <div class="name">${s.name}</div>
+        <div class="meta">v${s.version}${s.author ? ' · ' + s.author : ''}</div>
+        <div class="desc">${s.description || ''}</div>
+        <div class="actions">
+          ${s.active
+            ? '<button disabled>已激活</button>'
+            : `<button class="primary" onclick="activate('${s.id}')">启用</button>`}
+          <button class="danger" onclick="remove('${s.id}')">删除</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function activate(id) {
+    try {
+      await invoke('activate_skin', { id });
+      toast('已启用皮肤');
+      await load();
+    } catch (e) { toast(String(e)); }
+  }
+
+  async function remove(id) {
+    if (!confirm(`删除皮肤「${id}」？`)) return;
+    try {
+      await invoke('uninstall_skin', { id });
+      toast('已删除');
+      await load();
+    } catch (e) { toast(String(e)); }
+  }
+
+  $('btnInstall').onclick = async () => {
+    try {
+      const skin = await invoke('pick_and_install_skin');
+      if (skin) { toast(`已安装并启用「${skin.name}」`); await load(); }
+    } catch (e) { toast(String(e)); }
+  };
+
+  $('btnOpenDir').onclick = async () => {
+    try { await invoke('open_skins_dir'); } catch (e) { toast(String(e)); }
+  };
+
+  // 监听 .dshskin 双击安装完成事件 → 刷新皮肤列表
+  window.__TAURI__.event.listen('skins-changed', async () => {
+    await load();
+    toast('皮肤已更新');
+  });
+
+  load();
+</script>
+</body>
+</html>
